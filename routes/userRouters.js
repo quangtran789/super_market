@@ -31,32 +31,25 @@ authRouter.post('/register', asyncHandler(async(req, res)=>{
 }));
 
 
-//Dang nhap nguoi dung
-authRouter.post('/login', asyncHandler(async(req, res)=>{
-    const { email, password }= req.body;
+// Đăng nhập người dùng
+authRouter.post('/login', asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
 
     // Tìm người dùng theo email trong cơ sở dữ liệu
     const user = await User.findOne({ email });
     console.log('User found:', user);
-    // Kiểm tra xem người dùng có tồn tại không và so sánh mật khẩu
-    if (user) {
-        const isMatch = await user.matchPassword(password);
-        console.log('Password match:', isMatch); 
 
-        if (isMatch) {
-            res.status(200).json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                token: generateToken(user._id), // Tạo token
-            });
-        } else {
-            res.status(401); // Unauthorized
-            throw new Error('Email hoặc mật khẩu không hợp lệ');
-        }
+    // Kiểm tra xem người dùng có tồn tại không và so sánh mật khẩu
+    if (user && (await user.matchPassword(password))) {
+        res.status(200).json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            token: generateToken(user._id), 
+        });
     } else {
-        res.status(401); // Unauthorized
-        throw new Error('Email hoặc mật khẩu không hợp lệ');
+        res.status(401).json({ message: 'Email hoặc mật khẩu không hợp lệ' });
     }
 }));
 

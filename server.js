@@ -2,6 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/userRouters');
+const categoryRoutes = require('./routes/categoryRoutes');
+const productRouter = require('./routes/productRoutes');
+
 
 // Khởi tạo ứng dụng Express
 const app = express();
@@ -18,7 +21,10 @@ mongoose.connect(process.env.MONGO_URI)
     .catch((err) => console.log('Failed to connect to MongoDB', err));
 
 // Sử dụng router cho người dùng
-app.use('/api/users', authRoutes)
+app.use('/api/users', authRoutes);
+// Sử dụng route cho category
+app.use('/api', categoryRoutes);
+app.use('/api/products', productRouter); // Đặt route cho sản phẩm
 
 // Tạo một route đơn giản
 app.get('/', (req, res) => {

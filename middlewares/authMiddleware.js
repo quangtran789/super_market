@@ -1,27 +1,31 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-
-const protect = async (req, res, next)=>{
-    let token;
-
-    if(req.headers.authorization && req.headers,authorization.startsWith('Bearer')){
-        try {
-            token = req.headers.authorization.split(' ')[1];// Lấy token từ header
-
-            // Giải mã token
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-            // Tìm người dùng trong cơ sở dữ liệu
-            req.user = await User.findById(decoded.id).select('-password');// Không trả về mật khẩu
-            next(); // Tiếp tục đến route tiếp theo
-        } catch (error) {
-            console.error(error);
-            res.status(401).json({ message: 'Not authorized, token failed' }); // Unauthorized
+// Middleware bảo vệ
+const protect = async (req, res, next) => {
+    try {
+        // Lấy token từ header
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ message: 'Not authorized, no token' });
         }
-    }
-    if(!token){
-        res.status(401).json({message:'Not authorized, no token'})
+
+        // Giải mã token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = await User.findById(decoded.id).select('-password'); // Lấy thông tin người dùng mà không có mật khẩu
+        next();
+    } catch (error) {
+        res.status(401).json({ message: 'Not authorized' });
     }
 };
-module.exports = { protect };
+
+// Middleware kiểm tra vai trò admin
+const admin = (req, res, next) => {
+    if (req.user && req.user.role === 'admin') {
+        next();
+    } else {
+        res.status(403).json({ message: 'Not authorized as an admin' });
+    }
+};
+
+module.exports = { protect, admin };
