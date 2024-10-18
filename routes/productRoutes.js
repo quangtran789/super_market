@@ -80,7 +80,7 @@ productRouter.put('/:id', async (req, res) => {
 
 
   // Xóa sản phẩm
-  productRouter.delete('/products/:id', async (req, res) => {
+  productRouter.delete('/:id', async (req, res) => {
     try {
       const deletedProduct = await Product.findByIdAndDelete(req.params.id);
       if (!deletedProduct) {
