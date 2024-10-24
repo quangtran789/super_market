@@ -4,14 +4,14 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/userRouters');
 const categoryRoutes = require('./routes/categoryRoutes');
 const productRouter = require('./routes/productRoutes');
-
-
+const cartRouter = require('./routes/cartRoutes');
+const cors = require('cors');
 // Khởi tạo ứng dụng Express
 const app = express();
 
 // Cấu hình dotenv để quản lý biến môi trường
 dotenv.config();
-
+app.use(cors());
 // Middleware để parse JSON
 app.use(express.json());
 
@@ -25,7 +25,7 @@ app.use('/api/users', authRoutes);
 // Sử dụng route cho category
 app.use('/api', categoryRoutes);
 app.use('/api/products', productRouter); // Đặt route cho sản phẩm
-
+app.use('/api/cart', cartRouter);
 // Tạo một route đơn giản
 app.get('/', (req, res) => {
     res.send('API is running...');
