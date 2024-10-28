@@ -64,4 +64,22 @@ const generateToken = (id) => {
 authRouter.get('/profile', protect, (req, res) => {
     res.json(req.user); // Trả về thông tin người dùng đã đăng nhập
 });
+
+// Cập nhật địa chỉ của người dùng
+authRouter.put('/update-address', protect, asyncHandler(async(req, res)=>{
+    const { address } = req.body;
+
+    if(!address){
+        return res.status(400).json({ message: 'Vui lòng nhập địa chỉ' });
+    }
+    const user = await User.findById(req.user._id);
+
+    if(user){
+        user.address = address;
+        await user.save();
+        res.status(200).json({ message: 'Cập nhật địa chỉ thành công', address: user.address });
+    } else {
+        res.status(404).json({ message: 'Người dùng không tồn tại' });
+    }
+}));
 module.exports = authRouter;
