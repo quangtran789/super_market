@@ -82,4 +82,19 @@ authRouter.put('/update-address', protect, asyncHandler(async(req, res)=>{
         res.status(404).json({ message: 'Người dùng không tồn tại' });
     }
 }));
+
+// Xóa tài khoản của người dùng
+authRouter.delete('/delete-account', protect, asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+
+    // Tìm và xóa người dùng theo ID
+    const user = await User.findByIdAndDelete(userId);
+
+    if (user) {
+        res.status(200).json({ message: 'Xóa tài khoản thành công' });
+    } else {
+        res.status(404).json({ message: 'Người dùng không tồn tại' });
+    }
+}));
+
 module.exports = authRouter;
