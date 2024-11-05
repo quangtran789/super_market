@@ -76,4 +76,23 @@ cartRouter.delete('/remove/:id', protect, asyncHandler(async (req, res) => {
     res.status(200).json({ message: 'Đã xóa sản phẩm khỏi giỏ hàng' });
 }));
 
+// Xóa toàn bộ sản phẩm khỏi giỏ hàng
+cartRouter.delete('/clear/:userId', protect, asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        // Xóa tất cả sản phẩm trong giỏ hàng của người dùng
+        const result = await Cart.deleteMany({ userId });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: 'Giỏ hàng rỗng hoặc không tìm thấy' });
+        }
+
+        res.status(200).json({ message: 'Đã xóa toàn bộ sản phẩm trong giỏ hàng' });
+    } catch (error) {
+        console.error("Error clearing cart:", error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}));
+
+
 module.exports = cartRouter;

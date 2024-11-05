@@ -5,53 +5,44 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const orderRouter = express.Router();
 
+orderRouter.post('/create', protect, asyncHandler(async(req, res) => {
+    const { items, address, discountCode, discountValue } = req.body; // Nhận discountCode và discountValue từ body
 
-// Đặt hàng từ giỏ hàng
-orderRouter.post('/place-order', protect, asyncHandler(async(req, res)=>{
-    
-    const userId = req.user._id;
-    const { address } = req.body;
-
-    // Lấy danh sách sản phẩm trong giỏ hàng của người dùng
-    const userCart = await Cart.find({ userId }).populate('productId');
-    if (!userCart || userCart === 0) {
-        return res.status(400).json({ message: 'Giỏ hàng trống' });
+    // Kiểm tra nếu không có sản phẩm hoặc địa chỉ
+    if (!items || items.length === 0 || !address) {
+        return res.status(400).json({ message: 'Thông tin đơn hàng không hợp lệ' });
     }
-    let totalPrice =0;
-    const orderItems = [];
 
-     // Tạo danh sách sản phẩm cho đơn hàng và tính tổng tiền
-    for(const item of userCart){
-        const { productId, quantity } = item;
-        const product = await Product.findById(productId);
-        
-        if(product && product.quantity >= quantity){
-            orderItems.push({
-                productId: product._id,
-                quantity: quantity,
-                price: product.price,
-            });
-            totalPrice += product.price *quantity;
+    // Tính tổng giá trị đơn hàng với discountValue
+    const totalAmount = items.reduce((total, item) => total + item.price * item.quantity, 0) - discountValue; // Áp dụng discountValue vào tổng
 
-            // Cập nhật số lượng sản phẩm trong kho
-            product.quantity -= quantity;
-            await product.save();
-        }else{
-            return res.status(400).json({message: `Sản phẩm ${product.name} không đủ số lượng` });
-        }
-    }
-    //Tạo đơn hàng
-    const newOrder = new Order({
-        userId,
-        items: orderItems,
-        totalPrice,
+    // Tạo đơn hàng
+    const order = await Order.create({
+        userId: req.user._id,
+        items,
+        totalAmount,
         address,
+        discountCode, // Thêm discountCode vào đơn hàng
+        discountValue, // Thêm discountValue vào đơn hàng
     });
-    await newOrder.save();
 
-    // Xóa giỏ hàng sau khi đặt hàng thành công
-    await Cart.deleteMany({ userId });
-    res.status(201).json({ message: 'Đặt hàng thành công', order: newOrder });
+    if (order) {
+        res.status(201).json({ message: 'Đơn hàng được tạo thành công', order });
+    } else {
+        res.status(400).json({ message: 'Không thể tạo đơn hàng' });
+    }
+}));
+
+  
+
+// Lấy danh sách đơn hàng của người dùng
+orderRouter.get('/my-orders', protect, asyncHandler(async(req, res)=>{
+    const orders =await Order.find({ userId: req.user._id }).populate('items.productId');
+    if(orders){
+        res.status(200).json(orders);
+    }else{
+        res.status(404).json({ message: 'Không tìm thấy đơn hàng' })
+    }
 }));
 
 module.exports = orderRouter;

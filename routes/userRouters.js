@@ -74,7 +74,16 @@ authRouter.put('/update-address', protect, asyncHandler(async(req, res)=>{
     }
     const user = await User.findById(req.user._id);
 
-    if(user){
+    if (user) {
+        // Nếu người dùng có địa chỉ trước đó, trả về địa chỉ hiện tại
+        if (user.address) {
+            return res.status(200).json({
+                message: 'Địa chỉ hiện tại của bạn',
+                currentAddress: user.address,
+            });
+        }
+
+        // Nếu không có địa chỉ hiện tại, cập nhật địa chỉ mới
         user.address = address;
         await user.save();
         res.status(200).json({ message: 'Cập nhật địa chỉ thành công', address: user.address });
@@ -82,6 +91,17 @@ authRouter.put('/update-address', protect, asyncHandler(async(req, res)=>{
         res.status(404).json({ message: 'Người dùng không tồn tại' });
     }
 }));
+
+// Lấy địa chỉ hiện tại của người dùng
+authRouter.get('/current-address', protect, asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+    if (user) {
+        res.status(200).json({ address: user.address }); // Trả về địa chỉ hiện tại
+    } else {
+        res.status(404).json({ message: 'Người dùng không tồn tại' });
+    }
+}));
+
 
 // Xóa tài khoản của người dùng
 authRouter.delete('/delete-account', protect, asyncHandler(async (req, res) => {
