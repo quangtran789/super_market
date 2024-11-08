@@ -94,5 +94,42 @@ cartRouter.delete('/clear/:userId', protect, asyncHandler(async (req, res) => {
     }
 }));
 
+// Tăng số lượng sản phẩm trong giỏ hàng
+cartRouter.put('/increase/:id', protect, asyncHandler(async (req, res) => {
+    const cartItemId = req.params.id;
+
+    const cartItem = await Cart.findById(cartItemId);
+    if (!cartItem) {
+        return res.status(404).json({ message: 'Không tìm thấy sản phẩm trong giỏ hàng' });
+    }
+
+    // Tăng số lượng sản phẩm lên 1
+    cartItem.quantity += 1;
+    await cartItem.save();
+    res.json(cartItem);
+}));
+
+
+// Giảm số lượng sản phẩm trong giỏ hàng
+cartRouter.put('/decrease/:id', protect, asyncHandler(async (req, res) => {
+    const cartItemId = req.params.id;
+
+    const cartItem = await Cart.findById(cartItemId);
+    if (!cartItem) {
+        return res.status(404).json({ message: 'Không tìm thấy sản phẩm trong giỏ hàng' });
+    }
+
+    // Nếu số lượng lớn hơn 1, giảm số lượng
+    if (cartItem.quantity > 1) {
+        cartItem.quantity -= 1;
+        await cartItem.save();
+        res.json(cartItem);
+    } else {
+        // Nếu số lượng sản phẩm bằng 1, có thể xóa sản phẩm khỏi giỏ hàng
+        await Cart.findByIdAndDelete(cartItemId);
+        res.status(200).json({ message: 'Đã xóa sản phẩm khỏi giỏ hàng vì số lượng bằng 1' });
+    }
+}));
+
 
 module.exports = cartRouter;
