@@ -117,4 +117,8 @@ authRouter.delete('/delete-account', protect, asyncHandler(async (req, res) => {
     }
 }));
 
+
+
+
+
 module.exports = authRouter;
