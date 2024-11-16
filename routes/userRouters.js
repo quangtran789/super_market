@@ -116,6 +116,27 @@ authRouter.delete('/delete-account', protect, asyncHandler(async (req, res) => {
         res.status(404).json({ message: 'Người dùng không tồn tại' });
     }
 }));
+// Cập nhật thông tin người dùng (name và email)
+authRouter.put('/update-info', protect, asyncHandler(async (req, res) => {
+    const { name, email } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+        // Cập nhật thông tin người dùng
+        user.name = name || user.name;
+        user.email = email || user.email;
+
+        await user.save();
+        res.status(200).json({
+            message: 'Cập nhật thông tin thành công',
+            name: user.name,
+            email: user.email,
+        });
+    } else {
+        res.status(404).json({ message: 'Người dùng không tồn tại' });
+    }
+}));
+
 
 
 
