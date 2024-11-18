@@ -43,4 +43,37 @@ discountRouter.post('/add', async (req, res) => {
     }
   });
 
+  // Xóa mã giảm giá theo ID
+discountRouter.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedCode = await DiscountCode.findByIdAndDelete(id);
+
+    if (!deletedCode) {
+      return res.status(404).json({ message: 'Mã giảm giá không tồn tại' });
+    }
+
+    res.status(200).json({ message: 'Đã xóa mã giảm giá thành công', deletedCode });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting discount code' });
+  }
+});
+// Xóa mã giảm giá theo ID
+discountRouter.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedCode = await DiscountCode.findByIdAndDelete(id);
+
+    if (!deletedCode) {
+      return res.status(404).json({ message: 'Mã giảm giá không tồn tại' });
+    }
+
+    res.status(200).json({ message: 'Đã xóa mã giảm giá thành công', deletedCode });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting discount code' });
+  }
+});
+
 module.exports = discountRouter; // Xuất discountRouter
